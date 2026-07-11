@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>intelicat.AI - Smart Chat</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --chat-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-color: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --user-msg: #0284c7;
+            --bot-msg: #334155;
+            --border-color: #334155;
+            --google-g: #4285F4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 450px;
+            height: 85vh;
+            background-color: var(--chat-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Header */
+        .chat-header {
+            padding: 16px 20px;
+            background-color: #111827;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #38bdf8, #818cf8);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.4rem; /* Adjusted for cat emoji */
+            user-select: none;
+        }
+
+        .bot-status h1 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .status {
+            font-size: 0.75rem;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .status::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background-color: #10b981;
+            border-radius: 50%;
+        }
+
+        /* Mode Indicator Tool */
+        .google-search-toggle {
+            font-size: 0.8rem;
+            background-color: #1e293b;
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .google-search-toggle.active {
+            border-color: var(--google-g);
+            color: #fff;
+            background-color: rgba(66, 133, 244, 0.15);
+        }
+
+        /* Chat Window */
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-messages::-webkit-scrollbar-thumb {
+            background-color: var(--border-color);
+            border-radius: 3px;
+        }
+
+        /* Messages */
+        .message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .bot-message {
+            background-color: var(--bot-msg);
+            color: var(--text-main);
+            align-self: flex-start;
+            border-top-left-radius: 4px;
+        }
+
+        .user-message {
+            background-color: var(--user-msg);
+            color: #fff;
+            align-self: flex-end;
+            border-top-right-radius: 4px;
+        }
+
+        /* Google Smart Link Button */
+        .google-link-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            padding: 8px 14px;
+            background-color: #111827;
+            border: 1px solid #4285F4;
+            color: #4285F4;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+
+        .google-link-btn:hover {
+            background-color: rgba(66, 133, 244, 0.1);
+        }
+
+        /* Input Area */
+        .chat-input-area {
+            padding: 16px;
+            background-color: #111827;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input-area input:focus {
+            border-color: var(--accent-color);
+        }
+
+        .send-btn {
+            background-color: var(--accent-color);
+            color: #0f172a;
+            border: none;
+            border-radius: 8px;
+            padding: 0 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .send-btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <!-- Header -->
+        <div class="chat-header">
+            <div class="header-left">
+                <!-- Swapped 'I' with a Beluga-style smiling cat emoji -->
+                <div class="avatar">🐱</div>
+                <div class="bot-status">
+                    <h1>intelicat.AI</h1>
+                    <div class="status">Online</div>
+                </div>
+            </div>
+            <!-- Google Link Mode Button -->
+            <button class="google-search-toggle" id="googleToggle">
+                🔍 Google Off
+            </button>
+        </div>
+
+        <!-- Messages Window -->
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot-message">
+                Hello! I am intelicat.AI. How can I assist you today? Try typing something, or toggle "Google On" to force an external web search link!
+            </div>
+        </div>
+
+        <!-- Input Section -->
+        <div class="chat-input-area">
+            <input type="text" id="userInput" placeholder="Type a message or look something up..." autocomplete="off">
+            <button class="send-btn" id="sendBtn">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const googleToggle = document.getElementById('googleToggle');
+
+        let googleSearchMode = false;
+
+        // Toggle Google Mode functionality
+        googleToggle.addEventListener('click', () => {
+            googleSearchMode = !googleSearchMode;
+            if (googleSearchMode) {
+                googleToggle.classList.add('active');
+                googleToggle.innerText = '🔍 Google Link On';
+                userInput.placeholder = "Search Google instantly via AI...";
+            } else {
+                googleToggle.classList.remove('active');
+                googleToggle.innerText = '🔍 Google Off';
+                userInput.placeholder = "Type a message...";
+            }
+        });
+
+        function appendMessage(text, sender, searchUrl = null) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
+            
+            // Set regular text response
+            messageDiv.innerText = text;
+
+            // If a Google Search URL is provided, append the dynamic action link
+            if (searchUrl) {
+                const link = document.createElement('a');
+                link.href = searchUrl;
+                link.target = '_blank';
+                link.className = 'google-link-btn';
+                link.innerHTML = `
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="margin-bottom:-2px;"><path d="M12.24 10.285V13.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.866-3.577-7.866-8s3.536-8 7.866-8c2.46 0 4.105 1.025 5.047 1.926l2.427-2.334C17.955 2.192 15.34 1 12.24 1c-6.075 0-11 4.925-11 11s4.925 11 11 11c6.34 0 10.557-4.427 10.557-10.743 0-.724-.077-1.275-.172-1.688H12.24z"/></svg>
+                    View Live Google Results
+                `;
+                messageDiv.appendChild(link);
+            }
+
+            chatMessages.appendChild(messageDiv);
+            
+            // Auto scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function handleResponse(userText) {
+            setTimeout(() => {
+                let reply = "";
+                let searchUrl = null;
+                const lowerText = userText.toLowerCase();
+
+                // 1. Force Google mode if user toggled the button OR typed direct queries like "search/google"
+                if (googleSearchMode || lowerText.startsWith('search ') || lowerText.startsWith('google ')) {
+                    let query = userText;
+                    // Clean up prefixes if they typed them out
+                    if(lowerText.startsWith('search ')) query = userText.substring(7);
+                    if(lowerText.startsWith('google ')) query = userText.substring(7);
+                    
+                    reply = `I have generated a live Google search link to find immediate real-time answers for: "${query}"`;
+                    searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+                    
+                    appendMessage(reply, 'bot', searchUrl);
+                    return;
+                }
+
+                // 2. Standard Native Chat responses (Fallback handling)
+                if (lowerText.includes('hello') || lowerText.includes('hi')) {
+                    reply = "Meow! Just kidding, hello there! How can intelicat.AI help you today?";
+                } else if (lowerText.includes('your name')) {
+                    reply = "My name is intelicat.AI, your intelligent chat companion.";
+                } else if (lowerText.includes('help')) {
+                    reply = "I can answer basic hardcoded questions, or you can switch 'Google Link On' to scan the web.";
+                } else {
+                    // Smart Fallback: When the local AI bot doesn't know, it automatically links Google
+                    reply = "I'm not entirely certain about that on my local server memory. Let me look that up on Google for you!";
+                    searchUrl = `https://www.google.com/search?q=${encodeURIComponent(userText)}`;
+                }
+
+                appendMessage(reply, 'bot', searchUrl);
+            }, 700);
+        }
+
+        function sendMessage() {
+            const text = userInput.value.trim();
+            if (text === '') return;
+
+            appendMessage(text, 'user');
+            userInput.value = '';
+            handleResponse(text);
+        }
+
+        // Event listeners
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
